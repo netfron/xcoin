@@ -115,7 +115,7 @@ class CoinController extends Controller
 
         $units = 10;
         $currency = 'XRP';
-        $buy[$currency]['buy'] = $this->market_buy($units, $currency);
+        #$buy[$currency]['buy'] = $this->market_buy($units, $currency);
 
         #direct buy result
         if($buy) return response()->json($buy, 200);
