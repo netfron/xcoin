@@ -59,7 +59,7 @@ class CoinController extends Controller
     {
         $result = $this->api->xcoinApiCall("/trade/market_sell", ['units'=>floor($units), 'currency'=>$currency]);
         $this->insert_transaction($result);
-        return $result;        
+        return $result;
     }
 
     public function index()
@@ -84,19 +84,19 @@ class CoinController extends Controller
             'qtum'=>[
                 'total'=>$result->data->available_qtum,
                 'current'=>(int)$result->data->xcoin_last_qtum,
-            ],     
+            ],
             'eos'=>[
                 'total'=>$result->data->available_eos,
                 'current'=>(int)$result->data->xcoin_last_eos,
-            ],     
+            ],
             'eth'=>[
                 'total'=>$result->data->available_eth,
                 'current'=>(int)$result->data->xcoin_last_eth,
-            ],     
+            ],
             'etc'=>[
                 'total'=>$result->data->available_etc,
                 'current'=>(int)$result->data->xcoin_last_etc,
-            ],                                 
+            ],
         ];
 
         #-----------------------------------------------------------
@@ -113,31 +113,53 @@ class CoinController extends Controller
         #direct buy
         $buy = [];
 
-        $units = 10;
-        $currency = 'XRP';
-        #$buy[$currency]['buy'] = $this->market_buy($units, $currency);
+        $units = 8000;
+        $currency = 'xrp';
+        #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
 
         #direct buy result
         if($buy) return response()->json($buy, 200);
 
+        $buy = [];
+
+        $units = 103;
+        $currency = 'qtum';
+        #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
+
+        #direct buy result
+        if($buy) return response()->json($buy, 200);
 
         #-----------------------------------------------------------
-
         #direct sell
+
         $sell = [];
 
-        $units = 10;
-        $currency = 'XRP';
-        #$sell[$currency]['sell'] = $this->market_sell($units, $currency);
+        #sell all
+        $currency = 'xrp';
+        #$sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
 
-        #direct sell result
+        $currency = 'xrp';
+        if($data[$currency]['current'] <= 1300 && $data[$currency]['total'] >= 1){
+          $sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
+        }
         if($sell) return response()->json($sell, 200);
+
+        /*
+        if($data[$currency]['current'] <= 1200 && $data[$currency]['total'] >= 1){
+          $buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
+        }
+        if($sell) return response()->json($sell, 200);
+        */
 
         #-----------------------------------------------------------
 
         #html
+        print '<!DOCTYPE html>';
         echo '<html>';
-        echo "<head>".$script."</head>";
+        echo '<head>';
+        echo '<title>'.$data['xrp']['current'].'</title>';
+        echo $script;
+        echo '</head>';
         echo '<body>';
         echo '<pre>'.json_encode($data).'</pre>';
         echo '</body>';
@@ -151,9 +173,9 @@ class CoinController extends Controller
 
         #sell
         $currency = 'xrp';
-        $min = 2450;
+        $min = 1800;
         $max = 0;
-        $result = $this->auto_sell($result, $balance, $currency, $min, $max);
+        #$result = $this->auto_sell($result, $balance, $currency, $min, $max);
 
         #buy
         /*
@@ -190,6 +212,13 @@ class CoinController extends Controller
         return $result;
     }
 
+    private function sell_all($balance, $currency)
+    {
+        #$result[$currency]['sell_all'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
+        #$this->insert_transaction($result);
+        return $result;
+    }
+
     public function transactions()
     {
         $trans = Transactions::orderBy('id', 'desc')->get();
@@ -200,15 +229,15 @@ class CoinController extends Controller
             $result[] = json_decode($tran->transaction_detail, false);
         }
 
-        $script = "<script>timeout = setTimeout(function () {location.href='/xcoin/transaction';}, 10000);</script>";
+        #$script = "<script>timeout = setTimeout(function () {location.href='/xcoin/transaction';}, 10000);</script>";
 
         #html
         echo '<html>';
-        echo "<head>".$script."</head>";
+        #echo "<head>".$script."</head>";
         echo '<body>';
         echo '<pre>'.json_encode($result).'</pre>';
         echo '</body>';
-        echo '</html>';   
+        echo '</html>';
 
     }
 
