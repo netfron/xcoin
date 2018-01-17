@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Library\XCoinAPI;
 use App\Transactions;
 use App\XcoinPasswd;
+use App\XcoinXrp;
 
 class CoinController extends Controller
 {
@@ -174,46 +175,28 @@ class CoinController extends Controller
 
         #sell
         $currency = 'xrp';
-        $min = 1800;
-        $max = 0;
-        #$result = $this->auto_sell($result, $balance, $currency, $min, $max);
-
-        #buy
-        /*
-        $currency = 'xrp';
-        $min = 2400;
-        $max = 0;
+        $xrp_data = XcoinXrp::where('type', 'sell')->first();
+        $min = $xrp_data->min;
+        $max = $xrp_data->max;
         $result = $this->auto_sell($result, $balance, $currency, $min, $max);
-        */
 
         return $result;
     }
 
     private function auto_sell($result, $balance, $currency, $min, $max)
     {
-        if((int)$balance[$currency]['current'] <= $min && $min > 0){
-            $result[$currency]['auto_sell_min'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
-        }
-        if((int)$balance[$currency]['current'] >= $max && $max > 0){
-            $result[$currency]['auto_sell_max'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
-        }
-        return $result;
-    }
-
-    private function auto_buy($result, $balance, $currency, $min, $max)
-    {
-        if($balance['krw']['total'] > 1000){
+        if((int)$balance[$currency]['total'] >= 1){
             if((int)$balance[$currency]['current'] <= $min && $min > 0){
-                $result[$currency]['auto_buy_min'] = $this->market_buy($balance[$currency]['total'], strtoupper($currency));
+                $result[$currency]['auto_sell_min'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
             }
             if((int)$balance[$currency]['current'] >= $max && $max > 0){
-                $result[$currency]['auto_buy_max'] = $this->market_buy($balance[$currency]['total'], strtoupper($currency));
+                $result[$currency]['auto_sell_max'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
             }
         }
         return $result;
     }
 
-    public function sell_all($passwd)
+    public function sell_xrp($passwd)
     {
         $result = [];
         $balance = $this->balance();
@@ -224,6 +207,23 @@ class CoinController extends Controller
         if($pwd_data > 0){
             if($balance->data->total_xrp >= 1){
                 $result[$currency]['sell_all'] = $this->market_sell($balance->data->total_xrp, strtoupper($currency));
+                $this->insert_transaction($result);
+                return response()->json($result, 200);
+            }
+        }
+    }
+
+    public function buy_xrp($units, $passwd)
+    {
+        $result = [];
+        $balance = $this->balance();
+        $currency = 'xrp';
+
+        $pwd_data = XcoinPasswd::where('password', $passwd)->count();
+
+        if($pwd_data > 0){
+            if($balance->data->total_krw >= 1){
+                $result[$currency]['sell_all'] = $this->market_buy($units, strtoupper($currency));
                 $this->insert_transaction($result);
                 return response()->json($result, 200);
             }

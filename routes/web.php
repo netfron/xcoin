@@ -23,5 +23,6 @@ Route::group(array('prefix' => 'xcoin', 'middleware' => []), function () {
     Route::get('/balance', 'CoinController@balance');
     Route::get('/daemon', 'CoinController@daemon');
     Route::get('/transaction', 'CoinController@transactions');
-    Route::get('/sell/xrp/{passwd}', 'CoinController@sell_all');
+    Route::get('/sell/xrp/{passwd}', 'CoinController@sell_xrp');
+    Route::get('/buy/xrp/{units}/{passwd}', 'CoinController@buy_xrp');
 });
