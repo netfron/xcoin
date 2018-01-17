@@ -140,7 +140,7 @@ class CoinController extends Controller
 
         $currency = 'xrp';
         if($data[$currency]['current'] <= 1300 && $data[$currency]['total'] >= 1){
-          $sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
+          #$sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
         }
         if($sell) return response()->json($sell, 200);
 
