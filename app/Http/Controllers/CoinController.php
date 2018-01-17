@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Library\XCoinAPI;
 use App\Transactions;
+use App\XcoinPasswd;
 
 class CoinController extends Controller
 {
@@ -212,11 +213,21 @@ class CoinController extends Controller
         return $result;
     }
 
-    private function sell_all($balance, $currency)
+    public function sell_all($passwd)
     {
-        #$result[$currency]['sell_all'] = $this->market_sell($balance[$currency]['total'], strtoupper($currency));
-        #$this->insert_transaction($result);
-        return $result;
+        $result = [];
+        $balance = $this->balance();
+        $currency = 'xrp';
+
+        $pwd_data = XcoinPasswd::where('password', $passwd)->count();
+
+        if($pwd_data > 0){
+            if($balance->data->total_xrp >= 1){
+                $result[$currency]['sell_all'] = $this->market_sell($balance->data->total_xrp, strtoupper($currency));
+                $this->insert_transaction($result);
+                return response()->json($result, 200);
+            }
+        }
     }
 
     public function transactions()
