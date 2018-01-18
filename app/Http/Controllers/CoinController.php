@@ -70,6 +70,7 @@ class CoinController extends Controller
         $result = $this->balance();
         $script = '';
         if($timer) $script = "<script>timeout = setTimeout(function () {location.href='/xcoin';}, 2000);</script>";
+        if($result->status!='0000') $this->print_html(0, $script, json_encode($result));
 
         $data = [
             'krw'=>[
@@ -115,17 +116,8 @@ class CoinController extends Controller
         #direct buy
         $buy = [];
 
-        $units = 8000;
+        $units = 400;
         $currency = 'xrp';
-        #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
-
-        #direct buy result
-        if($buy) return response()->json($buy, 200);
-
-        $buy = [];
-
-        $units = 103;
-        $currency = 'qtum';
         #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
 
         #direct buy result
@@ -156,19 +148,22 @@ class CoinController extends Controller
         #-----------------------------------------------------------
 
         #html
-        print '<!DOCTYPE html>';
-        echo '<html>';
-        echo '<head>';
-        echo '<title>'.$data['xrp']['current'].'</title>';
-        echo $script;
-        echo '</head>';
-        echo '<body>';
-        echo '<pre>'.json_encode($data).'</pre>';
-        echo '</body>';
-        echo '</html>';
-
+        $this->print_html($data['xrp']['current'], $script, json_encode($data));
     }
-
+    private function print_html($current, $script, $data)
+    {
+      print '<!DOCTYPE html>';
+      echo '<html>';
+      echo '<head>';
+      echo '<title>'.$current.'</title>';
+      echo $script;
+      echo '</head>';
+      echo '<body>';
+      echo '<pre>'.$data.'</pre>';
+      echo '</body>';
+      echo '</html>';
+      exit;
+    }
     private function daemon($balance)
     {
         $result = [];
