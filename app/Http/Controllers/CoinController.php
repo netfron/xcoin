@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Library\XCoinAPI;
 use App\Transactions;
 use App\XcoinPasswd;
-use App\XcoinXrp;
+use App\XcoinCurrency;
 
 class CoinController extends Controller
 {
@@ -116,7 +116,7 @@ class CoinController extends Controller
         #direct buy
         $buy = [];
 
-        $units = 400;
+        $units = 7500;
         $currency = 'xrp';
         #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
 
@@ -169,12 +169,13 @@ class CoinController extends Controller
         $result = [];
 
         #sell
-        $currency = 'xrp';
-        $xrp_data = XcoinXrp::where('type', 'sell')->first();
-        $min = $xrp_data->min;
-        $max = $xrp_data->max;
-        $result = $this->auto_sell($result, $balance, $currency, $min, $max);
-
+        $currency_data = XcoinCurrency::where('type', 'sell')->get();
+        foreach ($currency_data as $data) {
+            $currency = $data->currency;
+            $min = $data->min;
+            $max = $data->max;
+            $result = $this->auto_sell($result, $balance, $currency, $min, $max);
+        }
         return $result;
     }
 
