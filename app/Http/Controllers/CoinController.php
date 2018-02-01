@@ -70,85 +70,98 @@ class CoinController extends Controller
         $result = $this->balance();
         $script = '';
         if($timer) $script = "<script>timeout = setTimeout(function () {location.href='/xcoin';}, 2000);</script>";
-        if($result->status!='0000') $this->print_html(0, $script, json_encode($result));
 
-        $data = [
-            'krw'=>[
-                'total'=>$result->data->available_krw,
-            ],
-            'xrp'=>[
-                'total'=>$result->data->available_xrp,
-                'current'=>(int)$result->data->xcoin_last_xrp,
-            ],
-            'btg'=>[
-                'total'=>$result->data->available_btg,
-                'current'=>(int)$result->data->xcoin_last_btg,
-            ],
-            'qtum'=>[
-                'total'=>$result->data->available_qtum,
-                'current'=>(int)$result->data->xcoin_last_qtum,
-            ],
-            'eos'=>[
-                'total'=>$result->data->available_eos,
-                'current'=>(int)$result->data->xcoin_last_eos,
-            ],
-            'eth'=>[
-                'total'=>$result->data->available_eth,
-                'current'=>(int)$result->data->xcoin_last_eth,
-            ],
-            'etc'=>[
-                'total'=>$result->data->available_etc,
-                'current'=>(int)$result->data->xcoin_last_etc,
-            ],
-        ];
+        if($result){
 
-        #-----------------------------------------------------------
+          if($result->status!='0000') $this->print_html(0, $script, json_encode($result));
+
+          $data = [
+              'krw'=>[
+                  'total'=>$result->data->available_krw,
+              ],
+              'xrp'=>[
+                  'total'=>$result->data->available_xrp,
+                  'current'=>(int)$result->data->xcoin_last_xrp,
+              ],
+              'btg'=>[
+                  'total'=>$result->data->available_btg,
+                  'current'=>(int)$result->data->xcoin_last_btg,
+              ],
+              'qtum'=>[
+                  'total'=>$result->data->available_qtum,
+                  'current'=>(int)$result->data->xcoin_last_qtum,
+              ],
+              'eos'=>[
+                  'total'=>$result->data->available_eos,
+                  'current'=>(int)$result->data->xcoin_last_eos,
+              ],
+              'eth'=>[
+                  'total'=>$result->data->available_eth,
+                  'current'=>(int)$result->data->xcoin_last_eth,
+              ],
+              'etc'=>[
+                  'total'=>$result->data->available_etc,
+                  'current'=>(int)$result->data->xcoin_last_etc,
+              ],
+              'btc'=>[
+                  'total'=>$result->data->available_btc,
+                  'current'=>(int)$result->data->xcoin_last_btc,
+              ],
+              'bch'=>[
+                  'total'=>$result->data->available_bch,
+                  'current'=>(int)$result->data->xcoin_last_bch,
+              ],
+          ];
+
+          #-----------------------------------------------------------
 
 
-        #daemon
-        $daemon = $this->daemon($data);
-        if($daemon) return response()->json($daemon, 200);
+          #daemon
+          $daemon = $this->daemon($data);
+          if($daemon) return response()->json($daemon, 200);
 
 
-        #-----------------------------------------------------------
+          #-----------------------------------------------------------
 
+          $total = ($data['krw']['total']);
 
-        #direct buy
-        $buy = [];
+          #direct buy
+          $buy = [];
+          $currency = 'qtum';
+          $units = floor($total / $data[$currency]['current']);
+          #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
 
-        $units = 7500;
-        $currency = 'xrp';
-        #$buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
+          #direct buy result
+          if($buy) return response()->json($buy, 200);
 
-        #direct buy result
-        if($buy) return response()->json($buy, 200);
+          #-----------------------------------------------------------
+          #direct sell
 
-        #-----------------------------------------------------------
-        #direct sell
+          $sell = [];
 
-        $sell = [];
-
-        #sell all
-        $currency = 'xrp';
-        #$sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
-
-        $currency = 'xrp';
-        if($data[$currency]['current'] <= 1300 && $data[$currency]['total'] >= 1){
+          #sell all
+          $currency = 'eos';
           #$sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
+
+          $currency = 'xrp';
+          if($data[$currency]['current'] <= 1300 && $data[$currency]['total'] >= 1){
+            #$sell[$currency]['sell_all'] = $this->market_sell($data[$currency]['total'], strtoupper($currency));
+          }
+          if($sell) return response()->json($sell, 200);
+
+          /*
+          if($data[$currency]['current'] <= 1200 && $data[$currency]['total'] >= 1){
+            $buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
+          }
+          if($sell) return response()->json($sell, 200);
+          */
+
+          #-----------------------------------------------------------
+
+          #html
+
         }
-        if($sell) return response()->json($sell, 200);
-
-        /*
-        if($data[$currency]['current'] <= 1200 && $data[$currency]['total'] >= 1){
-          $buy[$currency]['buy'] = $this->market_buy($units, strtoupper($currency));
-        }
-        if($sell) return response()->json($sell, 200);
-        */
-
-        #-----------------------------------------------------------
-
-        #html
-        $this->print_html($data['xrp']['current'], $script, json_encode($data));
+        $this->print_html($data['eos']['current'], $script, json_encode($data));
     }
     private function print_html($current, $script, $data)
     {
